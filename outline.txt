@@ -1,0 +1,52 @@
+"Welcome!"
+"New or returning user?"
+- new
+    "Are you a volunteer or an organization?"
+        - volunteer
+            "What's your first name?"
+            "What's your last name?"
+            "Please enter a username:"
+                error. username taken, please try again
+            "Please type a password:"
+            "Welcome #{firstname}, your account has been created."
+
+        - organization
+            "What's your organizations name?"
+            "What city is your organization located in?"
+            "Please enter a username:"
+                error. username taken, please try again
+            "Please enter a password:"
+            "Welcome #{organization}, your account has been created."
+
+- returning
+    "Please enter username:"
+        "invalid username..."
+        "try again"
+        "start over"
+    "Please enter password:"
+        "invalid password..."
+        "try again"
+        "start over"
+        -volunteer
+            "Welcome #{firstname}!"
+            "are you here to volunteer?"
+                - clock in
+                    "organization name"
+                    ### clocks in and goes to main volunteer page
+                - (if clocked in:) "clock out"
+                    "leave a review"
+                "Find an organization near me"
+                    "type a city:"
+                        (if nothing found) "no organizations available for volunteer work"
+                        ### output 5 organizations   
+            "View my reviews"
+            "View previous volunteer records"
+            "update profile"
+            "log out"
+
+        - organization
+            "Welcome #{organization}!"
+            "View previous volunteer records"
+            "View my reviews"
+            "update profile"
+            "log out"
