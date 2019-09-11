@@ -90,9 +90,8 @@ class CommandLineInterface
         prompt = TTY::Prompt.new
 
         puts "*** MAIN MENU ***"
-        puts ""
 
-        user = prompt.select("Please select an account option below:") do |menu|
+        user = prompt.select("") do |menu|
             menu.choice "I'm here to Volunteer", -> { go_to_volunteer }
             menu.choice 'View My Reviews', -> { my_reviews }
             menu.choice 'View Previous Volunteer Records', -> { prev_volunteer_records }
@@ -102,19 +101,54 @@ class CommandLineInterface
     end
 
     def go_to_volunteer
+        prompt = TTY::Prompt.new
 
+        puts "*** ORGANIZATIONS ***"
+        puts ""
+
+        prompt.select("") { |m| m.choice "Exit", -> { main_menu }}
     end
 
     def my_reviews
+        prompt = TTY::Prompt.new
 
+        puts "*** MY REVIEWS ***"
+        puts ""
+
+        prompt.select("") { |m| m.choice "Exit", -> { main_menu }}
     end
 
     def prev_volunteer_records
+        prompt = TTY::Prompt.new
 
+        puts "*** MY PRIOR VOLUNTEER RECORDS ***"
+        puts ""
+
+        prompt.select("") { |m| m.choice "Exit", -> { main_menu }}
     end
 
     def update_profile
+        prompt = TTY::Prompt.new
+        puts "*** UPDATE PROFILE ***"
 
+        ### CHANGE CODE BELOW TO ACCESS DATABASE
+
+        if  user[:type ]== volunteer #user == volunteer
+            prompt.select("") do |menu| 
+                menu.choice "Update First Name", -> { } #update first name
+                menu.choice "Update Last Name", -> { } #update last name 
+                menu.choice "Update Password", -> { } #update password
+                menu.choice "Go Back", -> { main_menu }
+            end
+        else #user == organization
+            prompt.select("") do |menu| 
+                menu.choice "Update Organization Name", -> { } #update name
+                menu.choice "Update City", -> { } #update city
+                menu.choice "Update State", -> { } #update state
+                menu.choice "Update Password", -> { } #update password
+                menu.choice "Go Back", -> { main_menu }
+            end
+        end
     end
 
     def log_out
