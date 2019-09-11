@@ -6,6 +6,6 @@ class CreateVolunteers < ActiveRecord::Migration[5.0]
       
       t.string :username
       t.string :password
+    end
   end
-end
 end

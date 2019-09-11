@@ -5,6 +5,6 @@ class CreateOrganizations < ActiveRecord::Migration[5.0]
       t.string :location
       t.string :username
       t.string :password
+    end
   end
-end
 end
