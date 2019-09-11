@@ -15,7 +15,8 @@ class CommandLineInterface
 
         prompt.select("") do |menu|
             menu.choice 'New User', -> { new_user }
-            menu.choice 'Returning User', -> { log_in }
+            menu.choice 'Returning Volunteer', -> { volunteer_log_in }
+            menu.choice 'Returning Organization', -> { organization_log_in }
             menu.choice 'Exit', -> { exit }
           end
     end
@@ -69,7 +70,7 @@ class CommandLineInterface
         organization_main_menu
     end
 
-    def log_in
+    def volunteer_log_in
         prompt = TTY::Prompt.new
         first_name = "PLACEHOLDER"
 
@@ -85,18 +86,26 @@ class CommandLineInterface
             puts ""
             puts ""
         end
-        ### ADD CODE TO SELECT WHICH MAIN MENU TO GO TO BASED ON USER TYPE
-        # if volunteer
-        #     volunteer_main_menu
-        # else
-        #     organization_main_menu
-        # end
-        main_menu
+        volunteer_main_menu
     end
 
-    def main_menu
-        ### CHECKS USER TYPE AND FORWARDS TO CORRECT MAIN MENU
-        puts "work in progress!"
+    def organization_log_in
+        prompt = TTY::Prompt.new
+        name = "PLACEHOLDER"
+
+        user = prompt.collect do
+            first_name = "PLACEHOLDER"
+
+            key(:username).ask('Enter your Username:', required: true)
+            key(:password).ask('Enter your Password:', required: true)
+            puts ""
+            puts "Welcome back #{name}! Great to see you again."
+            puts ""
+            puts "***************"
+            puts ""
+            puts ""
+        end
+        organization_main_menu
     end
 
     def volunteer_main_menu
@@ -108,7 +117,7 @@ class CommandLineInterface
             menu.choice "I'm here to Volunteer", -> { go_to_volunteer }
             menu.choice 'View My Reviews', -> { my_reviews }
             menu.choice 'View Previous Volunteer Records', -> { volunteer_records }
-            menu.choice 'Update Profile', -> { update_profile }
+            menu.choice 'Update Profile', -> { volunteer_update_profile }
             menu.choice 'Log Out', -> { log_out }
         end
     end
@@ -121,7 +130,7 @@ class CommandLineInterface
         user = prompt.select("") do |menu|
             menu.choice 'View Previous Volunteer Records', -> { volunteer_records }
             menu.choice 'View My Reviews', -> { my_reviews }
-            menu.choice 'Update Profile', -> { update_profile }
+            menu.choice 'Update Profile', -> { organization_update_profile }
             menu.choice 'Log Out', -> { log_out }
         end
     end
@@ -159,29 +168,29 @@ class CommandLineInterface
         prompt.select("") { |m| m.choice "Exit", -> { main_menu }}
     end
 
-    def update_profile
+    def volunteer_update_profile
         prompt = TTY::Prompt.new
         puts "*** UPDATE PROFILE ***"
 
-        ### CHANGE CODE BELOW TO ACCESS DATABASE
+        prompt.select("") do |menu| 
+            menu.choice "Update First Name", -> { } #update first name
+            menu.choice "Update Last Name", -> { } #update last name 
+            menu.choice "Update Password", -> { } #update password
+            menu.choice "Go back", -> { volunteer_main_menu }
+        end
+    end
 
-        # if  user[:type ]== volunteer #user == volunteer
-        #     prompt.select("") do |menu| 
-        #         menu.choice "Update First Name", -> { } #update first name
-        #         menu.choice "Update Last Name", -> { } #update last name 
-        #         menu.choice "Update Password", -> { } #update password
-        #         menu.choice "Go Back", -> { main_menu }
-        #     end
-        # else #user == organization
-        #     prompt.select("") do |menu| 
-        #         menu.choice "Update Organization Name", -> { } #update name
-        #         menu.choice "Update City", -> { } #update city
-        #         menu.choice "Update State", -> { } #update state
-        #         menu.choice "Update Password", -> { } #update password
-        #         menu.choice "Go Back", -> { main_menu }
-        #     end
-        # end
-        prompt.select("") { |m| m.choice "Exit", -> { main_menu }} ### remove once above code is set
+    def organization_update_profile
+        prompt = TTY::Prompt.new
+        puts "*** UPDATE PROFILE ***"
+
+        prompt.select("") do |menu| 
+            menu.choice "Update Organization Name", -> { } #update name
+            menu.choice "Update City", -> { } #update city
+            menu.choice "Update State", -> { } #update state
+            menu.choice "Update Password", -> { } #update password
+            menu.choice "Go Back", -> { organization_main_menu }
+        end
     end
 
     def log_out
@@ -190,5 +199,4 @@ class CommandLineInterface
         puts "Hope to see you again soon."
         user_prompt
     end
-
 end
