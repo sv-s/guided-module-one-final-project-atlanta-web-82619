@@ -5,6 +5,6 @@ class CreateLogs < ActiveRecord::Migration[5.0]
       t.integer :organization_id
       t.string :clock_in, :default => '0:0'
       t.string :clock_out, :default => '0:0'
+    end
   end
-end
 end

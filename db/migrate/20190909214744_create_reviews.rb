@@ -5,6 +5,6 @@ class CreateReviews < ActiveRecord::Migration[5.0]
       t.integer :organization_id
       t.string :review
       t.integer :rating, :default => 0
+    end
   end
-end
 end
