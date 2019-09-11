@@ -1,6 +1,11 @@
 require_relative '../config/environment'
-new_cli = CommandLineInterface.new
 
+<<<<<<< HEAD
 new_cli.welcome_message
 new_cli.user_prompt
 
+=======
+
+CLI.new.run
+puts "HELLO WORLD"
+>>>>>>> origin/user_work
