@@ -15,6 +15,7 @@ GEM
     arel (7.1.4)
     coderay (1.1.1)
     concurrent-ruby (1.0.5)
+<<<<<<< HEAD
     equatable (0.5.0)
     i18n (0.8.1)
     method_source (0.8.2)
@@ -23,6 +24,16 @@ GEM
     pastel (0.7.2)
       equatable (~> 0.5.0)
       tty-color (~> 0.4.0)
+=======
+    equatable (0.6.1)
+    i18n (0.8.1)
+    method_source (0.8.2)
+    minitest (5.10.1)
+    necromancer (0.5.0)
+    pastel (0.7.3)
+      equatable (~> 0.6)
+      tty-color (~> 0.5)
+>>>>>>> origin/user_work
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -42,6 +53,7 @@ GEM
     sqlite3 (1.3.13)
     thread_safe (0.3.6)
     tilt (2.0.7)
+<<<<<<< HEAD
     timers (4.3.0)
     tty-color (0.4.3)
     tty-cursor (0.6.1)
@@ -56,6 +68,20 @@ GEM
       tty-screen (~> 0.6.4)
       wisper (~> 2.0.0)
     tty-screen (0.6.5)
+=======
+    tty-color (0.5.0)
+    tty-cursor (0.7.0)
+    tty-font (0.4.0)
+    tty-prompt (0.19.0)
+      necromancer (~> 0.5.0)
+      pastel (~> 0.7.0)
+      tty-reader (~> 0.6.0)
+    tty-reader (0.6.0)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.7)
+      wisper (~> 2.0.0)
+    tty-screen (0.7.0)
+>>>>>>> origin/user_work
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     wisper (2.0.0)
@@ -64,10 +90,15 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  pastel
   pry
   require_all
   sinatra-activerecord
   sqlite3
+<<<<<<< HEAD
+=======
+  tty-font
+>>>>>>> origin/user_work
   tty-prompt
 
 BUNDLED WITH
