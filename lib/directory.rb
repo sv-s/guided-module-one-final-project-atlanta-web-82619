@@ -1,3 +1,5 @@
+require 'pry'
+
 class CommandLineInterface
     require "tty-prompt"
 
@@ -42,6 +44,8 @@ class CommandLineInterface
             key(:password).ask('Password:', required: true)
         end
 
+        Volunteer.create(first_name: user[:first_name], last_name: user[:last_name], username: user[:username], password: user[:password])
+
         puts "Welcome #{user[:first_name]}! Thanks for joining."
         puts ""
         puts "***************"
@@ -61,6 +65,8 @@ class CommandLineInterface
             key(:username).ask('Username:', required: true)
             key(:password).ask('Password:', required: true)
         end
+
+        Organization.create(name: user[:name], username: user[:username], password: user[:password], state: user[:state], city: user[:city])
 
         puts "Welcome #{user[:name]}! Thanks for joining."
         puts ""
@@ -140,7 +146,13 @@ class CommandLineInterface
 
         puts "*** ORGANIZATIONS ***"
         puts ""
-
+        puts "Please enter a city and state below to find organizations near you!"
+        input = prompt.collect do
+            key(:city).ask('City:', required: true)
+            key(:state).ask('State:', required: true)
+        end
+        
+       puts Organization.all.select { |o| o.city.downcase == input[:city].downcase && o.state.downcase == input[:state].downcase }
         ### takes a (city, state) and outputs set number of organizations in that city, state
 
         prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu }}
@@ -176,6 +188,7 @@ class CommandLineInterface
             menu.choice "Update First Name", -> { } #update first name
             menu.choice "Update Last Name", -> { } #update last name 
             menu.choice "Update Password", -> { } #update password
+            menu.choice "Delete My Account", -> { account_delete }
             menu.choice "Go back", -> { volunteer_main_menu }
         end
     end
@@ -189,8 +202,13 @@ class CommandLineInterface
             menu.choice "Update City", -> { } #update city
             menu.choice "Update State", -> { } #update state
             menu.choice "Update Password", -> { } #update password
+            menu.choice "Delete My Account", -> { account_delete }
             menu.choice "Go Back", -> { organization_main_menu }
         end
+    end
+
+    def account_delete
+
     end
 
     def log_out
