@@ -71,8 +71,6 @@ class CommandLineInterface
     end
 
     def volunteer_log_in
-        first_name = "PLACEHOLDER"
-
         returning_user = @prompt.collect do
             key(:username).ask('Enter your Username:', required: true)
             key(:password).ask('Enter your Password:', required: true)
@@ -90,23 +88,20 @@ class CommandLineInterface
     end
 
     def organization_log_in
-        name = "PLACEHOLDER"
-
         new_user = @prompt.collect do
             key(:username).ask('Enter your Username:', required: true)
             key(:password).ask('Enter your Password:', required: true)
-
-            user = Organization.all.select { |o| o.username == new_user[:username] }
-
-            puts ""
-            puts "Welcome back #{user.name}! Great to see you again."
-            puts ""
-            puts "***************"
-            puts ""
-            puts ""
-            organization_main_menu(user)
         end
-        # organization_main_menu(user)
+
+        user = Organization.all.select { |o| o.username == new_user[:username] }.first
+
+        puts ""
+        puts "Welcome back #{user.name}! Great to see you again."
+        puts ""
+        puts "***************"
+        puts ""
+        puts ""
+        organization_main_menu(user)
     end
 
     def volunteer_main_menu(user)
@@ -183,15 +178,15 @@ class CommandLineInterface
         org = my_org.map { |o| o.id }
 
         status = @prompt.select("") do |menu|
-            menu.choice 'Clock In', -> { clock_in(user, org) }
-            menu.choice 'Clock Out', -> { clock_out(user, org) }
+            menu.choice 'Clock In', -> { user_clock_in(user, org) }
+            menu.choice 'Clock Out', -> { user_clock_out(user, org) }
             menu.choice 'Main Menu', -> { volunteer_main_menu(user) }
         end
     end
 
-    def clock_in(user, org)
+    def user_clock_in(user, org)
 
-        Log.create(volunteer_id: user, organization_id: org, clock_in: Time.now.strftime("%H:%M"))
+        Log.create(volunteer_id: user.id, organization_id: org[0], clock_in: Time.now.strftime("%H:%M"))
 
         puts ""
         puts "*"
@@ -199,15 +194,23 @@ class CommandLineInterface
         @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
     end
 
-    def clock_out(user, org)
+    def user_clock_out(user, org)
         
-        recent = Log.all.select { |l| l.volunteer_id == user }.last
+        recent = Log.find_by(volunteer_id: user.id, organization_id: org[0])
         recent.update(clock_out: Time.now.strftime("%H:%M"))
+
+        out = recent.clock_out.split(":")
+        total_out = (out[0].to_i * 60) + out[1].to_i
+        inn = recent.clock_in.split(":")
+        total_inn = (inn[0].to_i * 60) + inn[1].to_i
+
+        time = total_out - total_inn
+        
 
         puts ""
         puts "*"
         puts "clocked out"
-        puts "You Worked for #{time}!"
+        puts "You Worked for #{time} minutes!"
         @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
     end
 
@@ -233,7 +236,7 @@ class CommandLineInterface
         puts "*** VOLUNTEER RECORDS ***"
         puts ""
 
-        ### outputs all records for volunteers
+        my_logs = Log.all.select { |l| l.volunteer_id == user.id }
 
         @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu(user) }}
     end
@@ -242,7 +245,7 @@ class CommandLineInterface
         puts "*** VOLUNTEER RECORDS ***"
         puts ""
 
-        ### outputs all volunteers that have volunteered at organization
+        my_logs = Log.all.select { |l| l.organization.id == user.id }
 
         @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu(user) }}
     end
