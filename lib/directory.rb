@@ -181,6 +181,7 @@ class CommandLineInterface
     end
 
     def clock_in
+        ### ADD CLOCK IN RECORD
         puts ""
         puts "*"
         puts "clocked in"
@@ -188,6 +189,7 @@ class CommandLineInterface
     end
 
     def clock_out
+        ### ADD CLOCK OUT RECORD
         puts ""
         puts "*"
         puts "clocked out"
@@ -256,7 +258,7 @@ class CommandLineInterface
     end
 
     def account_delete
-
+        ### DELETE ACCOUNT INSTANCE
     end
 
     def log_out
