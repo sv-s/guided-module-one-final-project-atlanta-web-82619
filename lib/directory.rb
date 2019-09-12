@@ -39,15 +39,21 @@ class CommandLineInterface
             key(:username).ask('Username:', required: true)
             key(:password).ask('Password:', required: true)
         end
-        
-        user = Volunteer.create(first_name: new_user[:first_name], last_name: new_user[:last_name], username: new_user[:username], password: new_user[:password])
 
-        puts "Welcome #{new_user[:first_name]}! Thanks for joining."
-        puts ""
-        puts "***************"
-        puts ""
-        puts ""
-        volunteer_main_menu(user)
+        if Volunteer.where(username: new_user[:username]).exists? == true
+            puts "username taken, try again."
+            puts ""
+            puts ""
+            new_volunteer
+        else
+            user = Volunteer.create(first_name: new_user[:first_name], last_name: new_user[:last_name], username: new_user[:username], password: new_user[:password])
+            puts "Welcome #{new_user[:first_name]}! Thanks for joining."
+            puts ""
+            puts "***************"
+            puts ""
+            puts ""
+            volunteer_main_menu(user)
+        end
     end
 
     def new_organization
@@ -60,14 +66,20 @@ class CommandLineInterface
             key(:password).ask('Password:', required: true)
         end
 
-        user = Organization.create(name: new_user[:name], username: new_user[:username], password: new_user[:password], state: new_user[:state], city: new_user[:city])
-
-        puts "Welcome #{new_user[:name]}! Thanks for joining."
-        puts ""
-        puts "***************"
-        puts ""
-        puts ""
-        organization_main_menu(user)
+        if Organization.where(username: new_user[:username]).exists? == true
+            puts "username taken, try again."
+            puts ""
+            puts ""
+            new_organization
+        else
+            user = Organization.create(name: new_user[:name], username: new_user[:username], password: new_user[:password], state: new_user[:state], city: new_user[:city])
+            puts "Welcome #{new_user[:name]}! Thanks for joining."
+            puts ""
+            puts "***************"
+            puts ""
+            puts ""
+            organization_main_menu(user)
+        end
     end
 
     def volunteer_log_in
@@ -76,15 +88,22 @@ class CommandLineInterface
             key(:password).ask('Enter your Password:', required: true)
         end
 
-        user = Volunteer.all.select { |v| v.username == returning_user[:username] }.first
-
-        puts ""
-        puts "Welcome back #{user.first_name}! Great to see you again."
-        puts ""
-        puts "***************"
-        puts ""
-        puts ""
-        volunteer_main_menu(user)
+        if Volunteer.all.select { |v| v.username == returning_user[:username] } == []
+            puts "Username not found, please sign up."
+            @prompt.select("") do |m| 
+                m.choice "Let's go!", -> { new_volunteer }
+                m.choice "No thanks.", -> { user_prompt }
+            end
+        else
+            user = Volunteer.all.select { |v| v.username == returning_user[:username] }
+            puts ""
+            puts "Welcome back #{user.first_name}! Great to see you again."
+            puts ""
+            puts "***************"
+            puts ""
+            puts ""
+            volunteer_main_menu(user)
+        end
     end
 
     def organization_log_in
@@ -93,15 +112,22 @@ class CommandLineInterface
             key(:password).ask('Enter your Password:', required: true)
         end
 
-        user = Organization.all.select { |o| o.username == new_user[:username] }.first
-
-        puts ""
-        puts "Welcome back #{user.name}! Great to see you again."
-        puts ""
-        puts "***************"
-        puts ""
-        puts ""
-        organization_main_menu(user)
+        if Organization.all.select { |o| o.username == new_user[:username] } == []
+            puts "Username not found, please sign up."
+            @prompt.select("") do |m| 
+                m.choice "Let's go!", -> { new_organization }
+                m.choice "No thanks.", -> { user_prompt }
+            end
+        else
+            user = Organization.all.select { |o| o.username == new_user[:username] }.first
+            puts ""
+            puts "Welcome back #{user.name}! Great to see you again."
+            puts ""
+            puts "***************"
+            puts ""
+            puts ""
+            organization_main_menu(user)
+        end
     end
 
     def volunteer_main_menu(user)
@@ -382,7 +408,36 @@ class CommandLineInterface
     end
 
     def account_delete(user)
-        ### DELETE ACCOUNT INSTANCE
+        if Volunteer.find_by(username: user.username)
+            input = @prompt.select("Are you sure you want to delete your account?") do |menu|
+                menu.choice 'Yes.', -> { "We'll miss you!" }
+                menu.choice 'Nevermind...', -> { volunteer_main_menu(user) }
+            end
+
+            person = Volunteer.find_by(id: user.id)
+            person.delete
+
+            puts "SUCCESS..."
+            puts ""
+            puts ""
+
+            @prompt.select("") { |m| m.choice "Goodbye!", -> { welcome_message }}
+
+        elsif Organization.find_by(username: user.username)
+            input = @prompt.select("Are you sure you want to delete your account?") do |menu|
+                menu.choice 'Yes.'
+                menu.choice 'Nevermind...', -> { organization_main_menu(user) }
+            end
+
+            person = Organization.find_by(id: user.id)
+            person.delete
+
+            puts "SUCCESS..."
+            puts ""
+            puts ""
+
+            @prompt.select("") { |m| m.choice "Goodbye!", -> { welcome_message }}
+        end
     end
 
     def log_out
