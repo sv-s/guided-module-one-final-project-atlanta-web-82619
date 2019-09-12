@@ -147,6 +147,8 @@ class CommandLineInterface
             key(:state).ask('State:', required: true)
         end
 
+        APICommunicator.location_search_retrieve(input[:city], input[:state], page_limit = 1)
+
         orgs = Organization.all.select { |o| o.city.downcase == input[:city].downcase && o.state.downcase == input[:state].downcase }
         org_names = orgs.map { |o| o.name }
         puts ""
@@ -193,6 +195,7 @@ class CommandLineInterface
         puts ""
         puts "*"
         puts "clocked out"
+        puts "You Worked for #{time}!"
         @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
     end
 
@@ -236,9 +239,9 @@ class CommandLineInterface
         puts "*** UPDATE PROFILE ***"
 
         @prompt.select("") do |menu| 
-            menu.choice "Update First Name", -> { } #update first name
-            menu.choice "Update Last Name", -> { } #update last name 
-            menu.choice "Update Password", -> { } #update password
+            menu.choice "Update First Name", -> { update_first_name }
+            menu.choice "Update Last Name", -> { update_last_name } 
+            menu.choice "Update Password", -> { update_password }
             menu.choice "Delete My Account", -> { account_delete }
             menu.choice "Go back", -> { volunteer_main_menu }
         end
@@ -248,13 +251,37 @@ class CommandLineInterface
         puts "*** UPDATE PROFILE ***"
 
         @prompt.select("") do |menu| 
-            menu.choice "Update Organization Name", -> { } #update name
-            menu.choice "Update City", -> { } #update city
-            menu.choice "Update State", -> { } #update state
-            menu.choice "Update Password", -> { } #update password
+            menu.choice "Update Organization Name", -> { update_org_name }
+            menu.choice "Update City", -> { update_city }
+            menu.choice "Update State", -> { update_state }
+            menu.choice "Update Password", -> { update_password }
             menu.choice "Delete My Account", -> { account_delete }
             menu.choice "Go Back", -> { organization_main_menu }
         end
+    end
+
+    def update_first_name
+        ### UPDATE FIRST NAME
+    end
+
+    def update_last_name
+        ### UPDATE LAST NAME
+    end
+
+    def update_org_name
+        ### UPDATE ORGANIZATION NAME
+    end
+
+    def update_city
+        ### UPDATE CITY
+    end
+
+    def update_state
+        ### UPDATE STATE
+    end
+
+    def update_password
+        ### UPDATE PASSWORD
     end
 
     def account_delete
