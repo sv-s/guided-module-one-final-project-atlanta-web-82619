@@ -96,8 +96,9 @@ class CommandLineInterface
             end
         else
             user = Volunteer.all.select { |v| v.username == returning_user[:username] }
+            user_first_name = user.map { |v| v.first_name }
             puts ""
-            puts "Welcome back #{user.first_name}! Great to see you again."
+            puts "Welcome back #{user_first_name[0]}! Great to see you again."
             puts ""
             puts "***************"
             puts ""
@@ -212,7 +213,8 @@ class CommandLineInterface
 
     def user_clock_in(user, org)
 
-        Log.create(volunteer_id: user.id, organization_id: org[0], clock_in: Time.now.strftime("%H:%M"))
+        user_id = user.map { |u| u.id }
+        Log.create(volunteer_id: user_id[0], organization_id: org[0], clock_in: Time.now.strftime("%H:%M"))
 
         puts ""
         puts "*"
@@ -222,7 +224,8 @@ class CommandLineInterface
 
     def user_clock_out(user, org)
         
-        recent = Log.find_by(volunteer_id: user.id, organization_id: org[0])
+        user_id = user.map { |u| u.id }
+        recent = Log.find_by(volunteer_id: user_id[0], organization_id: org[0])
         recent.update(clock_out: Time.now.strftime("%H:%M"))
 
         out = recent.clock_out.split(":")
@@ -262,7 +265,8 @@ class CommandLineInterface
         puts "*** VOLUNTEER RECORDS ***"
         puts ""
 
-        my_logs = Log.all.select { |l| l.volunteer_id == user.id }
+        user_id_set = user.map { |u| u.id }
+        my_logs = Log.all.select { |l| l.volunteer_id == user_id_set[0] }
 
         @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu(user) }}
     end
@@ -271,7 +275,7 @@ class CommandLineInterface
         puts "*** VOLUNTEER RECORDS ***"
         puts ""
 
-        my_logs = Log.all.select { |l| l.organization.id == user.id }
+        my_logs = Log.all.select { |l| l.organization_id == user.id }
 
         @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu(user) }}
     end
@@ -282,7 +286,7 @@ class CommandLineInterface
         @prompt.select("") do |menu| 
             menu.choice "Update First Name", -> { update_first_name(user) }
             menu.choice "Update Last Name", -> { update_last_name(user) } 
-            menu.choice "Update Password", -> { update_password(user) }
+            menu.choice "Update Password", -> { update_volunteer_password(user) }
             menu.choice "Delete My Account", -> { account_delete(user) }
             menu.choice "Go back", -> { volunteer_main_menu(user) }
         end
@@ -295,7 +299,7 @@ class CommandLineInterface
             menu.choice "Update Organization Name", -> { update_org_name(user) }
             menu.choice "Update City", -> { update_city(user) }
             menu.choice "Update State", -> { update_state(user) }
-            menu.choice "Update Password", -> { update_password(user) }
+            menu.choice "Update Password", -> { update_organization_password(user) }
             menu.choice "Delete My Account", -> { account_delete(user) }
             menu.choice "Go Back", -> { organization_main_menu(user) }
         end
@@ -306,7 +310,8 @@ class CommandLineInterface
             key(:name).ask('Enter New First Name:', required: true)
         end
 
-        person = Volunteer.find_by(id: user.id)
+        user_id = user.map { |u| u.id }
+        person = Volunteer.find_by(id: user_id[0])
         person.update(first_name: input[:name])
 
         puts "SUCCESS..."
@@ -321,7 +326,8 @@ class CommandLineInterface
             key(:name).ask('Enter New Last Name:', required: true)
         end
 
-        person = Volunteer.find_by(id: user.id)
+        user_id = user.map { |u| u.id }
+        person = Volunteer.find_by(id: user_id[0])
         person.update(last_name: input[:name])
 
         puts "SUCCESS..."
@@ -376,35 +382,36 @@ class CommandLineInterface
         @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
     end
 
-    def update_password(user)
-        if Volunteer.find_by(username: user.username)
-            input = @prompt.collect do
-                key(:name).ask('Enter New Password:', required: true)
-            end
-
-            person = Volunteer.find_by(id: user.id)
-            person.update(password: input[:name])
-
-            puts "SUCCESS..."
-            puts ""
-            puts "Password changed to #{input[:name]}."
-
-            @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
-
-        elsif Organization.find_by(username: user.username)
-            input = @prompt.collect do
-                key(:name).ask('Enter New Password:', required: true)
-            end
-
-            person = Organization.find_by(id: user.id)
-            person.update(password: input[:name])
-
-            puts "SUCCESS..."
-            puts ""
-            puts "Password changed to #{input[:name]}."
-
-            @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
+    def update_volunteer_password(user)
+        new_user = user.map { |u| u.username }
+        input = @prompt.collect do
+            key(:name).ask('Enter New Password:', required: true)
         end
+
+        user_id = user.map { |u| u.id }
+        person = Volunteer.find_by(id: user_id[0])
+        person.update(password: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "Password changed to #{input[:name]}."
+
+        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
+    end
+
+    def update_organization_password(user)
+        input = @prompt.collect do
+            key(:name).ask('Enter New Password:', required: true)
+        end
+
+        person = Organization.find_by(id: user.id)
+        person.update(password: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "Password changed to #{input[:name]}."
+
+        @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
     end
 
     def account_delete(user)
@@ -414,7 +421,8 @@ class CommandLineInterface
                 menu.choice 'Nevermind...', -> { volunteer_main_menu(user) }
             end
 
-            person = Volunteer.find_by(id: user.id)
+            user_id = user.map { |u| u.id }
+            person = Volunteer.find_by(id: user_id[0])
             person.delete
 
             puts "SUCCESS..."
