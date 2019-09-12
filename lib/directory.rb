@@ -168,36 +168,42 @@ class CommandLineInterface
         puts "*** Welcome to #{selection}! ***"
         puts ""
         @prompt.select("") do |m| 
-            m.choice "Volunteer Now", -> { clock_in_and_out }
+            m.choice "Volunteer Now", -> { clock_in_and_out(selection) }
             m.choice "Main Menu", -> { volunteer_main_menu }
         end
         puts ""
     end
 
-    def clock_in_and_out
+    def clock_in_and_out(selection)
+
+        my_org = Organization.all.select { |o| o.name.downcase == selection.downcase }
+        org = my_org.map { |o| o.id }
+
         status = @prompt.select("") do |menu|
-            menu.choice 'Clock In', -> { clock_in }
-            menu.choice 'Clock Out', -> { clock_out}
+            menu.choice 'Clock In', -> { clock_in(user, org) }
+            menu.choice 'Clock Out', -> {  }
             menu.choice 'Main Menu', -> { volunteer_main_menu }
         end
     end
 
-    def clock_in
-        ### ADD CLOCK IN RECORD
-        puts ""
-        puts "*"
-        puts "clocked in"
-        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
-    end
+    # def clock_in(user, org)
 
-    def clock_out
-        ### ADD CLOCK OUT RECORD
-        puts ""
-        puts "*"
-        puts "clocked out"
-        puts "You Worked for #{time}!"
-        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
-    end
+    #     Log.create(user, org, Time.now.strftime("%H:%M"))
+
+    #     puts ""
+    #     puts "*"
+    #     puts "clocked in"
+    #     @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
+    # end
+
+    # def clock_out
+    #     ### ADD CLOCK OUT RECORD
+    #     puts ""
+    #     puts "*"
+    #     puts "clocked out"
+    #     puts "You Worked for #{time}!"
+    #     @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
+    # end
 
     def my_reviews_volunteer
         puts "*** MY REVIEWS ***"
