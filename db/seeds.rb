@@ -1,5 +1,5 @@
 # organization1 = Organization.create(name: 'ProjectDowntown',state: 'Florida',city: 'Jacksonville',username: 'pd_jax',password:'jax')
-# organization2 = Organization.create(name: 'Humane Society',state: 'Georiga',city: 'Atlanta',username: 'humane_atl',password: 'atl')
+# organization2 = Organization.create(name: 'Humane Society',state: 'Georgia',city: 'Atlanta',username: 'humane_atl',password: 'atl')
 # organization3 = Organization.create(name: 'ProjectDowntown',state: 'Florida',city:'Tampa',username:'pd_tampa',password: 'tampa')
 # organization4 = Organization.create(name: 'ProjectDowntown',state: 'Florida',city:'Miami',username:'pd_mia',password:'mia')
 # organization5 = Organization.create(name:' ProjectDowntown',state: 'Florida',city:'Tallahassee',username:'pd_tally',password:'tally')
