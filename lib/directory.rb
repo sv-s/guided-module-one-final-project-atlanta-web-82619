@@ -421,7 +421,7 @@ class CommandLineInterface
             puts ""
             puts ""
 
-            @prompt.select("") { |m| m.choice "Goodbye!", -> { welcome_message }}
+            @prompt.select("") { |m| m.choice "Goodbye!", -> { log_out }}
 
         elsif Organization.find_by(username: user.username)
             input = @prompt.select("Are you sure you want to delete your account?") do |menu|
@@ -436,7 +436,7 @@ class CommandLineInterface
             puts ""
             puts ""
 
-            @prompt.select("") { |m| m.choice "Goodbye!", -> { welcome_message }}
+            @prompt.select("") { |m| m.choice "Goodbye!", -> { log_out }}
         end
     end
 
