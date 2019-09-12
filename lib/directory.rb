@@ -32,7 +32,7 @@ class CommandLineInterface
     end
 
     def new_volunteer
-        user = @prompt.collect do
+        new_user = @prompt.collect do
             key(:first_name).ask('First Name:', required: true)
             key(:last_name).ask('Last Name:', required: true)
             puts ""
@@ -40,18 +40,18 @@ class CommandLineInterface
             key(:password).ask('Password:', required: true)
         end
 
-        Volunteer.create(first_name: user[:first_name], last_name: user[:last_name], username: user[:username], password: user[:password])
+        user = Volunteer.create(first_name: user[:first_name], last_name: user[:last_name], username: user[:username], password: user[:password])
 
-        puts "Welcome #{user[:first_name]}! Thanks for joining."
+        puts "Welcome #{new_user[:first_name]}! Thanks for joining."
         puts ""
         puts "***************"
         puts ""
         puts ""
-        volunteer_main_menu
+        volunteer_main_menu(user)
     end
 
     def new_organization
-        user = @prompt.collect do
+        new_user = @prompt.collect do
             key(:name).ask('Organization Name:', required: true)
             key(:city).ask('City:', required: true)
             key(:state).ask('State:', required: true)
@@ -60,14 +60,14 @@ class CommandLineInterface
             key(:password).ask('Password:', required: true)
         end
 
-        Organization.create(name: user[:name], username: user[:username], password: user[:password], state: user[:state], city: user[:city])
+        user = Organization.create(name: user[:name], username: user[:username], password: user[:password], state: user[:state], city: user[:city])
 
-        puts "Welcome #{user[:name]}! Thanks for joining."
+        puts "Welcome #{new_user[:name]}! Thanks for joining."
         puts ""
         puts "***************"
         puts ""
         puts ""
-        organization_main_menu
+        organization_main_menu(user)
     end
 
     def volunteer_log_in
@@ -85,7 +85,7 @@ class CommandLineInterface
             puts ""
             puts ""
         end
-        volunteer_main_menu
+        volunteer_main_menu(user)
     end
 
     def organization_log_in
@@ -103,28 +103,28 @@ class CommandLineInterface
             puts ""
             puts ""
         end
-        organization_main_menu
+        organization_main_menu(user)
     end
 
-    def volunteer_main_menu
+    def volunteer_main_menu(user)
         puts "*** MAIN MENU ***"
 
         user = @prompt.select("") do |menu|
-            menu.choice "I'm here to Volunteer", -> { go_to_volunteer }
-            menu.choice 'View My Reviews', -> { my_reviews_volunteer }
-            menu.choice 'View Previous Volunteer Records', -> { volunteer_records_for_volunteer }
-            menu.choice 'Update Profile', -> { volunteer_update_profile }
+            menu.choice "I'm here to Volunteer", -> { go_to_volunteer(user) }
+            menu.choice 'View My Reviews', -> { my_reviews_volunteer(user) }
+            menu.choice 'View Previous Volunteer Records', -> { volunteer_records_for_volunteer(user) }
+            menu.choice 'Update Profile', -> { volunteer_update_profile(user) }
             menu.choice 'Log Out', -> { log_out }
         end
     end
 
-    def organization_main_menu
+    def organization_main_menu(user)
         puts "*** MAIN MENU ***"
 
         user = @prompt.select("") do |menu|
-            menu.choice 'View Previous Volunteer Records', -> { volunteer_records_for_organization }
-            menu.choice 'View My Reviews', -> { my_reviews_organization }
-            menu.choice 'Update Profile', -> { organization_update_profile }
+            menu.choice 'View Previous Volunteer Records', -> { volunteer_records_for_organization(user) }
+            menu.choice 'View My Reviews', -> { my_reviews_organization(user) }
+            menu.choice 'Update Profile', -> { organization_update_profile(user) }
             menu.choice 'Log Out', -> { log_out }
         end
     end
@@ -137,7 +137,7 @@ class CommandLineInterface
         Organization.all.map { |o| o.state }.uniq
     end
 
-    def go_to_volunteer
+    def go_to_volunteer(user)
         puts "*** ORGANIZATIONS ***"
         puts ""
         puts "Please enter a city and state below to find organizations near you!"
@@ -155,142 +155,147 @@ class CommandLineInterface
         puts ""
 
         selection = @prompt.select("Select an organization", org_names)
-        select_organization(selection)
+        select_organization(selection, user)
         puts ""
         puts ""
         puts "***************"
         puts ""
     end
 
-    def select_organization(selection)
+    def select_organization(selection, user)
         my_org = Organization.all.select { |o| o.name.downcase == selection.downcase }
 
         puts "*** Welcome to #{selection}! ***"
         puts ""
         @prompt.select("") do |m| 
-            m.choice "Volunteer Now", -> { clock_in_and_out(selection) }
-            m.choice "Main Menu", -> { volunteer_main_menu }
+            m.choice "Volunteer Now", -> { clock_in_and_out(selection, user) }
+            m.choice "Main Menu", -> { volunteer_main_menu(user) }
         end
         puts ""
     end
 
-    def clock_in_and_out(selection)
+    def clock_in_and_out(selection, user)
 
         my_org = Organization.all.select { |o| o.name.downcase == selection.downcase }
         org = my_org.map { |o| o.id }
 
         status = @prompt.select("") do |menu|
             menu.choice 'Clock In', -> { clock_in(user, org) }
-            menu.choice 'Clock Out', -> {  }
-            menu.choice 'Main Menu', -> { volunteer_main_menu }
+            menu.choice 'Clock Out', -> { clock_out(user, org) }
+            menu.choice 'Main Menu', -> { volunteer_main_menu(user) }
         end
     end
 
-    # def clock_in(user, org)
+    def clock_in(user, org)
 
-    #     Log.create(user, org, Time.now.strftime("%H:%M"))
+        Log.create(volunteer_id: user, organization_id: org, clock_in: Time.now.strftime("%H:%M"))
 
-    #     puts ""
-    #     puts "*"
-    #     puts "clocked in"
-    #     @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
-    # end
+        puts ""
+        puts "*"
+        puts "clocked in"
+        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
+    end
 
-    # def clock_out
-    #     ### ADD CLOCK OUT RECORD
-    #     puts ""
-    #     puts "*"
-    #     puts "clocked out"
-    #     puts "You Worked for #{time}!"
-    #     @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu }}
-    # end
+    def clock_out(user, org)
+        
+        recent = Log.all.select { |l| l.volunteer_id == user }.last
+        recent.update(clock_out: Time.now.strftime("%H:%M"))
 
-    def my_reviews_volunteer
+        
+
+        puts ""
+        puts "*"
+        puts "clocked out"
+        puts "You Worked for #{time}!"
+        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
+    end
+
+    def my_reviews_volunteer(user)
         puts "*** MY REVIEWS ***"
         puts ""
 
         ### outputs the reviews a volunteer has left
 
-        @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu }}
+        @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu(user) }}
     end
 
-    def my_reviews_organization
+    def my_reviews_organization(user)
         puts "*** MY REVIEWS ***"
         puts ""
 
         ### outputs the reviews an organization has recieved
 
-        @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu }}
+        @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu(user) }}
     end
 
-    def volunteer_records_for_volunteer
+    def volunteer_records_for_volunteer(user)
         puts "*** VOLUNTEER RECORDS ***"
         puts ""
 
         ### outputs all records for volunteers
 
-        @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu }}
+        @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu(user) }}
     end
 
-    def volunteer_records_for_organization
+    def volunteer_records_for_organization(user)
         puts "*** VOLUNTEER RECORDS ***"
         puts ""
 
         ### outputs all volunteers that have volunteered at organization
 
-        @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu }}
+        @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu(user) }}
     end
 
-    def volunteer_update_profile
+    def volunteer_update_profile(user)
         puts "*** UPDATE PROFILE ***"
 
         @prompt.select("") do |menu| 
-            menu.choice "Update First Name", -> { update_first_name }
-            menu.choice "Update Last Name", -> { update_last_name } 
-            menu.choice "Update Password", -> { update_password }
-            menu.choice "Delete My Account", -> { account_delete }
-            menu.choice "Go back", -> { volunteer_main_menu }
+            menu.choice "Update First Name", -> { update_first_name(user) }
+            menu.choice "Update Last Name", -> { update_last_name(user) } 
+            menu.choice "Update Password", -> { update_password(user) }
+            menu.choice "Delete My Account", -> { account_delete(user) }
+            menu.choice "Go back", -> { volunteer_main_menu(user) }
         end
     end
 
-    def organization_update_profile
+    def organization_update_profile(user)
         puts "*** UPDATE PROFILE ***"
 
         @prompt.select("") do |menu| 
-            menu.choice "Update Organization Name", -> { update_org_name }
-            menu.choice "Update City", -> { update_city }
-            menu.choice "Update State", -> { update_state }
-            menu.choice "Update Password", -> { update_password }
-            menu.choice "Delete My Account", -> { account_delete }
-            menu.choice "Go Back", -> { organization_main_menu }
+            menu.choice "Update Organization Name", -> { update_org_name(user) }
+            menu.choice "Update City", -> { update_city(user) }
+            menu.choice "Update State", -> { update_state(user) }
+            menu.choice "Update Password", -> { update_password(user) }
+            menu.choice "Delete My Account", -> { account_delete(user) }
+            menu.choice "Go Back", -> { organization_main_menu(user) }
         end
     end
 
-    def update_first_name
+    def update_first_name(user)
         ### UPDATE FIRST NAME
     end
 
-    def update_last_name
+    def update_last_name(user)
         ### UPDATE LAST NAME
     end
 
-    def update_org_name
+    def update_org_name(user)
         ### UPDATE ORGANIZATION NAME
     end
 
-    def update_city
+    def update_city(user)
         ### UPDATE CITY
     end
 
-    def update_state
+    def update_state(user)
         ### UPDATE STATE
     end
 
-    def update_password
+    def update_password(user)
         ### UPDATE PASSWORD
     end
 
-    def account_delete
+    def account_delete(user)
         ### DELETE ACCOUNT INSTANCE
     end
 
