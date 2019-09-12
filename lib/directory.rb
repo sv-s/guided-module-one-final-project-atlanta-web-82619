@@ -39,8 +39,8 @@ class CommandLineInterface
             key(:username).ask('Username:', required: true)
             key(:password).ask('Password:', required: true)
         end
-
-        user = Volunteer.create(first_name: user[:first_name], last_name: user[:last_name], username: user[:username], password: user[:password])
+        
+        user = Volunteer.create(first_name: new_user[:first_name], last_name: new_user[:last_name], username: new_user[:username], password: new_user[:password])
 
         puts "Welcome #{new_user[:first_name]}! Thanks for joining."
         puts ""
@@ -60,7 +60,7 @@ class CommandLineInterface
             key(:password).ask('Password:', required: true)
         end
 
-        user = Organization.create(name: user[:name], username: user[:username], password: user[:password], state: user[:state], city: user[:city])
+        user = Organization.create(name: new_user[:name], username: new_user[:username], password: new_user[:password], state: new_user[:state], city: new_user[:city])
 
         puts "Welcome #{new_user[:name]}! Thanks for joining."
         puts ""
@@ -73,37 +73,40 @@ class CommandLineInterface
     def volunteer_log_in
         first_name = "PLACEHOLDER"
 
-        user = @prompt.collect do
-            first_name = "PLACEHOLDER"
-
+        returning_user = @prompt.collect do
             key(:username).ask('Enter your Username:', required: true)
             key(:password).ask('Enter your Password:', required: true)
-            puts ""
-            puts "Welcome back #{first_name}! Great to see you again."
-            puts ""
-            puts "***************"
-            puts ""
-            puts ""
         end
+
+        user = Volunteer.all.select { |v| v.username == returning_user[:username] }.first
+
+        puts ""
+        puts "Welcome back #{user.first_name}! Great to see you again."
+        puts ""
+        puts "***************"
+        puts ""
+        puts ""
         volunteer_main_menu(user)
     end
 
     def organization_log_in
         name = "PLACEHOLDER"
 
-        user = @prompt.collect do
-            first_name = "PLACEHOLDER"
-
+        new_user = @prompt.collect do
             key(:username).ask('Enter your Username:', required: true)
             key(:password).ask('Enter your Password:', required: true)
+
+            user = Organization.all.select { |o| o.username == new_user[:username] }
+
             puts ""
-            puts "Welcome back #{name}! Great to see you again."
+            puts "Welcome back #{user.name}! Great to see you again."
             puts ""
             puts "***************"
             puts ""
             puts ""
+            organization_main_menu(user)
         end
-        organization_main_menu(user)
+        # organization_main_menu(user)
     end
 
     def volunteer_main_menu(user)
@@ -149,7 +152,7 @@ class CommandLineInterface
 
         APICommunicator.location_search_retrieve(input[:city], input[:state], page_limit = 1)
 
-        orgs = Organization.all.select { |o| o.city.downcase == input[:city].downcase && o.state.downcase == input[:state].downcase }
+        orgs = Organization.all.select { |o| o.city == input[:city] && o.state == input[:state] }
         org_names = orgs.map { |o| o.name }
         puts ""
         puts ""
@@ -163,7 +166,7 @@ class CommandLineInterface
     end
 
     def select_organization(selection, user)
-        my_org = Organization.all.select { |o| o.name.downcase == selection.downcase }
+        my_org = Organization.all.select { |o| o.name == selection }
 
         puts "*** Welcome to #{selection}! ***"
         puts ""
@@ -176,7 +179,7 @@ class CommandLineInterface
 
     def clock_in_and_out(selection, user)
 
-        my_org = Organization.all.select { |o| o.name.downcase == selection.downcase }
+        my_org = Organization.all.select { |o| o.name == selection }
         org = my_org.map { |o| o.id }
 
         status = @prompt.select("") do |menu|
@@ -201,8 +204,6 @@ class CommandLineInterface
         recent = Log.all.select { |l| l.volunteer_id == user }.last
         recent.update(clock_out: Time.now.strftime("%H:%M"))
 
-        
-
         puts ""
         puts "*"
         puts "clocked out"
@@ -214,7 +215,7 @@ class CommandLineInterface
         puts "*** MY REVIEWS ***"
         puts ""
 
-        ### outputs the reviews a volunteer has left
+        my_reviews = Review.all.select { |r| r.volunteer_id == user.id }
 
         @prompt.select("") { |m| m.choice "Exit", -> { volunteer_main_menu(user) }}
     end
@@ -223,7 +224,7 @@ class CommandLineInterface
         puts "*** MY REVIEWS ***"
         puts ""
 
-        ### outputs the reviews an organization has recieved
+        my_reviews = Review.all.select { |r| r.organization_id == user.id }
 
         @prompt.select("") { |m| m.choice "Exit", -> { organization_main_menu(user) }}
     end
@@ -272,27 +273,109 @@ class CommandLineInterface
     end
 
     def update_first_name(user)
-        ### UPDATE FIRST NAME
+        input = @prompt.collect do
+            key(:name).ask('Enter New First Name:', required: true)
+        end
+
+        person = Volunteer.find_by(id: user.id)
+        person.update(first_name: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "First Name changed to #{input[:name]}."
+        
+        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
     end
 
     def update_last_name(user)
-        ### UPDATE LAST NAME
+        input = @prompt.collect do
+            key(:name).ask('Enter New Last Name:', required: true)
+        end
+
+        person = Volunteer.find_by(id: user.id)
+        person.update(last_name: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "Last Name changed to #{input[:name]}."
+        
+        @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
     end
 
     def update_org_name(user)
-        ### UPDATE ORGANIZATION NAME
+        input = @prompt.collect do
+            key(:name).ask('Enter New Organization Name:', required: true)
+        end
+
+        person = Organization.find_by(id: user.id)
+        person.update(name: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "Organization Name changed to #{input[:name]}."
+        
+        @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
     end
 
     def update_city(user)
-        ### UPDATE CITY
+        input = @prompt.collect do
+            key(:name).ask('Enter New City:', required: true)
+        end
+
+        person = Organization.find_by(id: user.id)
+        person.update(city: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "City changed to #{input[:name]}."
+        
+        @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
     end
 
     def update_state(user)
-        ### UPDATE STATE
+        input = @prompt.collect do
+            key(:name).ask('Enter New State:', required: true)
+        end
+
+        person = Organization.find_by(id: user.id)
+        person.update(state: input[:name])
+
+        puts "SUCCESS..."
+        puts ""
+        puts "State changed to #{input[:name]}."
+        
+        @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
     end
 
     def update_password(user)
-        ### UPDATE PASSWORD
+        if Volunteer.find_by(username: user.username)
+            input = @prompt.collect do
+                key(:name).ask('Enter New Password:', required: true)
+            end
+
+            person = Volunteer.find_by(id: user.id)
+            person.update(password: input[:name])
+
+            puts "SUCCESS..."
+            puts ""
+            puts "Password changed to #{input[:name]}."
+
+            @prompt.select("") { |m| m.choice "Done", -> { volunteer_main_menu(user) }}
+
+        elsif Organization.find_by(username: user.username)
+            input = @prompt.collect do
+                key(:name).ask('Enter New Password:', required: true)
+            end
+
+            person = Organization.find_by(id: user.id)
+            person.update(password: input[:name])
+
+            puts "SUCCESS..."
+            puts ""
+            puts "Password changed to #{input[:name]}."
+
+            @prompt.select("") { |m| m.choice "Done", -> { organization_main_menu(user) }}
+        end
     end
 
     def account_delete(user)
