@@ -10,6 +10,3 @@ v2 = Volunteer.create(first_name: 'Alex',last_name: 'Pugia',username: 'apug',pas
 v3 = Volunteer.create(first_name: 'Andrew',last_name: 'Kim',username: 'akim',password: 'andrew1')
 
 api = APICommunicator.new
-api.default_results['organizations'].each do |org|
-    Organization.create(name: org['name'], state: org['state'], city: org['city'], username: org['ein'], password: 'password')
-end
