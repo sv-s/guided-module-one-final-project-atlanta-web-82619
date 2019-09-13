@@ -236,7 +236,7 @@ end
 
     def user_clock_in(user, org)
 
-        user_id = user.map { |u| u.id }
+        user_id = user[:id] 
         Log.create(volunteer_id: user_id[0], organization_id: org[0], clock_in: Time.now.strftime("%H:%M"))
 
         puts ""
@@ -247,7 +247,7 @@ end
 
     def user_clock_out(user, org)
         
-        user_id = user.map { |u| u.id }
+        user_id = user[:id]s
         recent = Log.find_by(volunteer_id: user_id[0], organization_id: org[0])
         recent.update(clock_out: Time.now.strftime("%H:%M"))
 
