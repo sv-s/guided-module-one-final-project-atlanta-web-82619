@@ -10,8 +10,6 @@ class CommandLineInterface
 
         welcome_message
     end
-    
-    
 
     def welcome_message
         @font1 = TTY::Font.new(:doom)
@@ -27,9 +25,7 @@ class CommandLineInterface
 
     def user_prompt
         @prompt = TTY::Prompt.new
-        
-        
-
+    
         @prompt.select("") do |menu|
             menu.choice 'New User', -> { new_user }
             menu.choice 'Returning Volunteer', -> { volunteer_log_in }
@@ -116,9 +112,7 @@ class CommandLineInterface
             user_first_name = user.map { |v| v.first_name }
             puts ""
             puts "Welcome back #{user_first_name[0]}! Great to see you again."
-            puts ""
             puts @pastel.blue("***************")
-            puts ""
             puts ""
             volunteer_main_menu(user)
         end
@@ -247,7 +241,7 @@ end
 
     def user_clock_out(user, org)
         
-        user_id = user[:id]s
+        user_id = user[:id]
         recent = Log.find_by(volunteer_id: user_id[0], organization_id: org[0])
         recent.update(clock_out: Time.now.strftime("%H:%M"))
 
