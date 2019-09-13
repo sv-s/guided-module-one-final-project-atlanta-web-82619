@@ -1,19 +1,34 @@
+
 require 'pry'
 
 class CommandLineInterface
     require "tty-prompt"
+    def run
+        @pastel = Pastel.new
+        @prompt = TTY:Prompt.new
+        @font = TTY::Font.new(:doom)
+
+        welcome_message
+    end
+    
+    
 
     def welcome_message
+        @font1 = TTY::Font.new(:doom)
         puts ""
-        puts "Welcome to My Community!"
+        x =  "Welcome to My Community!"
+        puts @font1.write(x,letter_spacing:1)
         puts "An app that connects organizations to volunteers..."
         puts ""
         puts ""
         puts "Are you a new or returning user?"
+        sleep 2
     end
 
     def user_prompt
         @prompt = TTY::Prompt.new
+        
+        
 
         @prompt.select("") do |menu|
             menu.choice 'New User', -> { new_user }
@@ -32,6 +47,7 @@ class CommandLineInterface
     end
 
     def new_volunteer
+        @pastel = Pastel.new
         new_user = @prompt.collect do
             key(:first_name).ask('First Name:', required: true)
             key(:last_name).ask('Last Name:', required: true)
@@ -49,7 +65,7 @@ class CommandLineInterface
             user = Volunteer.create(first_name: new_user[:first_name], last_name: new_user[:last_name], username: new_user[:username], password: new_user[:password])
             puts "Welcome #{new_user[:first_name]}! Thanks for joining."
             puts ""
-            puts "***************"
+            puts @pastel.red("                          ")
             puts ""
             puts ""
             volunteer_main_menu(user)
@@ -75,7 +91,7 @@ class CommandLineInterface
             user = Organization.create(name: new_user[:name], username: new_user[:username], password: new_user[:password], state: new_user[:state], city: new_user[:city])
             puts "Welcome #{new_user[:name]}! Thanks for joining."
             puts ""
-            puts "***************"
+            puts @pastel.inverse.red('***************')
             puts ""
             puts ""
             organization_main_menu(user)
@@ -83,6 +99,7 @@ class CommandLineInterface
     end
 
     def volunteer_log_in
+        @pastel = Pastel.new
         returning_user = @prompt.collect do
             key(:username).ask('Enter your Username:', required: true)
             key(:password).ask('Enter your Password:', required: true)
@@ -100,7 +117,7 @@ class CommandLineInterface
             puts ""
             puts "Welcome back #{user_first_name[0]}! Great to see you again."
             puts ""
-            puts "***************"
+            puts @pastel.blue("***************")
             puts ""
             puts ""
             volunteer_main_menu(user)
@@ -171,14 +188,19 @@ class CommandLineInterface
             key(:city).ask('City:', required: true)
             key(:state).ask('State:', required: true)
         end
+        
 
         APICommunicator.location_search_retrieve(input[:city], input[:state], page_limit = 1)
-
-        orgs = Organization.all.select { |o| o.city == input[:city] && o.state == input[:state] }
+      
+            
+        orgs = Organization.all.select { |o| o.city.downcase == input[:city].downcase && o.state.downcase == input[:state].downcase }
         org_names = orgs.map { |o| o.name }
         puts ""
         puts ""
-
+        if org_names == []
+            puts 'No matches found try again'
+            go_to_volunteer(user)
+        else
         selection = @prompt.select("Select an organization", org_names)
         select_organization(selection, user)
         puts ""
@@ -186,6 +208,7 @@ class CommandLineInterface
         puts "***************"
         puts ""
     end
+end
 
     def select_organization(selection, user)
         my_org = Organization.all.select { |o| o.name == selection }
