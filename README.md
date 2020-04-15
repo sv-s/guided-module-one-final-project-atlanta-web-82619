@@ -62,3 +62,4 @@ ActiveRecord::Base.logger = nil
 ```
 
 Project Description
+Project made to help out my father's small business.
